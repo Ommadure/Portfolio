@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { Link } from 'react-scroll'
 import { Typewriter } from 'react-simple-typewriter'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { ArrowUpRight, Mail, Moon, Sun } from 'lucide-react'
 import { SectionHeading } from './components/SectionHeading'
 import { ProjectCard } from './components/ProjectCard'
@@ -9,7 +9,20 @@ import { SkillBadge } from './components/SkillBadge'
 import { ExperienceCard } from './components/ExperienceCard'
 import { about, experience, heroPhrases, navItems, projects, skills, socialLinks } from './data/content'
 
+const sectionReveal = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 },
+}
+
 function App() {
+  const { scrollYProgress } = useScroll()
+  const accentTranslateY = useSpring(useTransform(scrollYProgress, [0, 1], [0, 220]), {
+    stiffness: 160,
+    damping: 40,
+  })
+
+  const accentOpacity = useTransform(scrollYProgress, [0, 0.05, 0.95, 1], [0, 0.45, 0.45, 0])
+
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'dark'
     const saved = localStorage.getItem('portfolio-theme')
@@ -23,9 +36,20 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-500">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 blur-3xl bg-[radial-gradient(circle_at_top,_rgba(124,58,237,0.24),_transparent_16%),radial-gradient(circle_at_80%_20%,rgba(34,211,238,0.16),_transparent_18%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 blur-3xl bg-[radial-gradient(circle_at_top,_rgba(239,167,123,0.24),_transparent_16%),radial-gradient(circle_at_80%_20%,rgba(242,183,148,0.16),_transparent_18%)]" />
+      <div className="pointer-events-none absolute right-5 top-28 hidden h-[calc(100vh-8rem)] w-1 rounded-full bg-[var(--accent)]/10 lg:block" />
+      <motion.div
+        style={{ y: accentTranslateY, opacity: accentOpacity }}
+        className="pointer-events-none absolute right-5 top-28 hidden h-16 w-1 rounded-full bg-[var(--accent)]/80 shadow-[0_0_40px_rgba(245,158,11,0.35)] lg:block"
+      />
       <main className="relative mx-auto flex min-h-screen max-w-360 flex-col gap-10 px-5 py-6 lg:px-10 lg:py-8">
-        <header className="flex items-center justify-between gap-4 rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/95 px-5 py-4 shadow-[0_18px_70px_rgba(15,23,42,0.25)] backdrop-blur-xl lg:hidden">
+        <motion.header
+          initial="hidden"
+          animate="visible"
+          variants={sectionReveal}
+          transition={{ duration: 0.65, ease: 'easeOut' }}
+          className="flex items-center justify-between gap-4 rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/95 px-5 py-4 shadow-[0_18px_70px_rgba(15,23,42,0.25)] backdrop-blur-xl lg:hidden"
+        >
           <div>
             <p className="text-sm uppercase tracking-[0.32em] text-[var(--accent)]/90">Om Madure</p>
             <p className="text-sm text-[var(--text-muted)]">Frontend Developer</p>
@@ -33,15 +57,22 @@ function App() {
           <button
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] text-[var(--text-primary)] transition hover:border-[var(--accent)]/60 hover:bg-[rgba(124,58,237,0.18)]"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] text-[var(--text-primary)] transition hover:border-[var(--accent)]/60 hover:bg-[var(--bg-soft)]"
             aria-label="Toggle light and dark theme"
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
-        </header>
+        </motion.header>
 
         <div className="grid gap-10 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
-          <aside className="hidden lg:block lg:sticky lg:top-6 lg:self-start">
+          <motion.aside
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={sectionReveal}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            className="hidden lg:block lg:sticky lg:top-6 lg:self-start"
+          >
             <div className="space-y-8 rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/95 p-8 shadow-[0_24px_90px_rgba(15,23,42,0.25)] backdrop-blur-xl">
               <div className="space-y-3">
                 <p className="text-xs uppercase tracking-[0.4em] text-[var(--accent)]/80">Frontend Developer</p>
@@ -53,17 +84,18 @@ function App() {
                 <p className="text-xs uppercase tracking-[0.32em] text-[var(--text-muted)]/80">Navigation</p>
                 <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
                   {navItems.map((item) => (
-                    <Link
-                      key={item.id}
-                      to={item.id}
-                      spy
-                      smooth
-                      offset={-90}
-                      duration={500}
-                      className="cursor-pointer rounded-2xl px-3 py-3 transition hover:bg-[rgba(124,58,237,0.16)] hover:text-[var(--text-primary)]"
-                    >
-                      {item.label}
-                    </Link>
+                    <motion.div key={item.id} whileHover={{ x: 6 }} className="rounded-2xl px-3 py-3 transition hover:bg-[var(--bg-soft)] hover:text-[var(--text-primary)]">
+                      <Link
+                        to={item.id}
+                        spy
+                        smooth
+                        offset={-90}
+                        duration={500}
+                        className="block cursor-pointer"
+                      >
+                        {item.label}
+                      </Link>
+                    </motion.div>
                   ))}
                 </nav>
               </div>
@@ -72,12 +104,12 @@ function App() {
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
                     <p className="uppercase tracking-[0.32em] text-[var(--accent)]/80">Theme</p>
-                    <p className="text-sm text-[var(--text-muted)]">Light / dark mode</p>
+                    <p className="text-sm text-[var(--text-muted)]"></p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] text-[var(--text-primary)] transition hover:border-[var(--accent)]/60 hover:bg-[rgba(124,58,237,0.18)]"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--bg-soft)] text-[var(--text-primary)] transition hover:border-[var(--accent)]/60 hover:bg-[var(--bg-soft)]"
                     aria-label="Toggle light and dark theme"
                   >
                     {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -100,13 +132,26 @@ function App() {
                 </div>
               </div>
             </div>
-          </aside>
+          </motion.aside>
 
           <div className="space-y-16">
-            <section id="hero" className="overflow-hidden rounded-4xl border border-[var(--border)] bg-[var(--bg-surface)]/90 p-8 shadow-[0_24px_90px_rgba(15,23,42,0.28)] backdrop-blur-xl sm:p-10">
+            <motion.section
+              id="hero"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={sectionReveal}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+              className="overflow-hidden rounded-4xl border border-[var(--border)] bg-[var(--bg-surface)]/90 p-8 shadow-[0_24px_90px_rgba(15,23,42,0.28)] backdrop-blur-xl sm:p-10"
+            >
               <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
-                <div className="space-y-6">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/30 bg-[rgba(124,58,237,0.12)] px-4 py-2 text-sm text-[var(--accent)]">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                  className="space-y-6"
+                >
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/30 bg-[var(--bg-soft)] px-4 py-2 text-sm text-[var(--accent)]"> 
                     Frontend developer • React • TypeScript
                   </span>
                   <div className="space-y-5">
@@ -115,33 +160,45 @@ function App() {
                     <p className="max-w-2xl text-lg leading-8 text-[var(--text-muted)]">
                       {about.description}
                     </p>
+                    <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                      <a href="mailto:ommadure7@gmail.com" className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] px-3 py-2 text-sm text-[var(--accent)] transition hover:border-[var(--accent-secondary)]/60 hover:bg-[var(--bg-soft)]">Email me at ommadure7@gmail.com</a>
+                    </div>
                   </div>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <Link
-                      to="projects"
-                      spy
-                      smooth
-                      offset={-90}
-                      duration={500}
-                      className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-[var(--accent-secondary)]"
-                    >
-                      Explore projects
+                    <motion.div whileHover={{ y: -2 }} className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-[var(--accent-secondary)]">
+                      <Link
+                        to="projects"
+                        spy
+                        smooth
+                        offset={-90}
+                        duration={500}
+                        className="block"
+                      >
+                        Explore projects
+                      </Link>
                       <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                    <a
-                      href="#contact"
-                      className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-6 py-3 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--accent-secondary)]/60 hover:bg-[rgba(255,255,255,0.08)]"
-                    >
+                    </motion.div>
+                    <motion.a whileHover={{ y: -2 }} href="#contact" className="inline-flex items-center justify-center rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-6 py-3 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--accent-secondary)]/60 hover:bg-[rgba(255,255,255,0.08)]">
                       Contact me
-                    </a>
+                    </motion.a>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="relative isolate overflow-hidden rounded-4xl border border-[var(--accent)]/15 bg-[linear-gradient(135deg,rgba(124,58,237,0.10),rgba(34,211,238,0.08))] p-6 shadow-[0_25px_80px_rgba(56,189,248,0.18)]">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.15),transparent_40%),radial-gradient(circle_at_20%_20%,rgba(168,85,247,0.12),transparent_30%)]" />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98, y: 12 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.75, ease: 'easeOut' }}
+                  className="relative isolate overflow-hidden rounded-4xl border border-[var(--accent)]/15 bg-[linear-gradient(135deg,rgba(239,167,123,0.10),rgba(242,183,148,0.08))] p-6 shadow-[0_25px_80px_rgba(239,167,123,0.18)]"
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(239,167,123,0.15),transparent_40%),radial-gradient(circle_at_20%_20%,rgba(242,183,148,0.12),transparent_30%)]" />
                   <div className="relative space-y-5">
                     <p className="text-sm uppercase tracking-[0.32em] text-[var(--accent)]/80">Featured workflow</p>
-                    <div className="space-y-3 rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/90 p-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+                      className="space-y-3 rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/90 p-6"
+                    >
                       <p className="text-sm uppercase tracking-[0.32em] text-[var(--text-muted)]">What I build</p>
                       <p className="text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
                         <Typewriter
@@ -154,11 +211,11 @@ function App() {
                           delaySpeed={1800}
                         />
                       </p>
-                    </div>
+                    </motion.div>
                   </div>
-                </div>
+                </motion.div>
               </div>
-            </section>
+            </motion.section>
 
             <motion.section
               id="about"
@@ -276,22 +333,27 @@ function App() {
                   <div className="rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/90 p-6">
                     <p className="text-sm uppercase tracking-[0.32em] text-[var(--accent)]/80">Contact details</p>
                     <div className="mt-5 space-y-4 text-sm text-[var(--text-primary)]">
-                      <a href="mailto:ommadure7@gmail.com" className="block rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-4 py-3 transition hover:border-[var(--accent-secondary)]/60">ommadure7@gmail.com</a>
+                      <div className="rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-4 py-3">
+                        <p className="text-[var(--text-muted)]">Email</p>
+                        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=ommadure7@gmail.com" target="_blank" rel="noreferrer" className="mt-1 block text-[var(--accent)] transition hover:text-[var(--accent-secondary)]">ommadure7@gmail.com</a>
+                      </div>
                       <a href="https://github.com/" target="_blank" rel="noreferrer" className="block rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-4 py-3 transition hover:border-[var(--accent-secondary)]/60">github.com/om-madure</a>
                       <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer" className="block rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.05)] px-4 py-3 transition hover:border-[var(--accent-secondary)]/60">linkedin.com/in/om-madure</a>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-4xl border border-[var(--accent)]/15 bg-[rgba(56,189,248,0.08)] p-10 text-[var(--text-primary)]">
+                <div className="rounded-4xl border border-[var(--accent)]/15 bg-[var(--accent-secondary-soft)] p-10 text-[var(--text-primary)]">
                   <div className="space-y-5">
-                    <div className="inline-flex items-center gap-3 rounded-full bg-[rgba(56,189,248,0.10)] px-4 py-2 text-xs uppercase tracking-[0.4em] text-[var(--accent-secondary)]/90">
+                    <div className="inline-flex items-center gap-3 rounded-full bg-[var(--accent-secondary-soft)] px-4 py-2 text-xs uppercase tracking-[0.4em] text-[var(--accent-secondary)]/90">
                       <Mail className="h-4 w-4" />
                       Quick reply
                     </div>
                     <p className="text-3xl font-semibold tracking-tight text-[var(--text-primary)]">Let’s build something meaningful together.</p>
                     <p className="text-[var(--text-muted)]">I’m open to new frontend roles and product collaborations. If you have a concept or need a React-first implementation, reach out.</p>
                     <a
-                      href="mailto:ommadure7@gmail.com"
+                      href="https://mail.google.com/mail/?view=cm&fs=1&to=ommadure7@gmail.com"
+                      target="_blank"
+                      rel="noreferrer"
                       className="inline-flex items-center gap-2 rounded-2xl bg-[rgba(255,255,255,0.08)] px-5 py-3 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[rgba(255,255,255,0.14)]"
                     >
                       Email me

@@ -54,7 +54,7 @@ export function ProjectCard({
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <a
           href={live}
-          className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-soft)] px-4 py-2 text-sm font-medium text-[var(--accent-secondary)] transition hover:bg-[rgba(34,211,238,0.16)]"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-soft)] px-4 py-2 text-sm font-medium text-[var(--accent-secondary)] transition hover:bg-[var(--accent-secondary-soft)]"
         >
           Live demo
           <ArrowUpRight className="h-4 w-4" />

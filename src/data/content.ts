@@ -92,7 +92,7 @@ export const experience = [
 export const socialLinks = [
   {
     label: "Email",
-    href: "mailto:ommadure7@gmail.com",
+    href: "https://mail.google.com/mail/?view=cm&fs=1&to=ommadure7@gmail.com",
   },
   {
     label: "GitHub",
