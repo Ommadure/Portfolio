@@ -26,7 +26,7 @@
   --shadow: 0 24px 70px rgba(10, 13, 21, 0.18);
   --border: rgba(210, 182, 158, 0.18);
   --selection: rgba(239, 167, 123, 0.30);
-  --shadow-card: 0 24px 90px rgba(10, 13, 21, 0.28);
+  --shadow-card: 0 24px 90px rgba(239, 167, 123, 0.18);
 }
 
 [data-theme='light'] {

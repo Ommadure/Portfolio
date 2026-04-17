@@ -26,8 +26,8 @@ export function ProjectCard({
       transition={{ type: "spring", stiffness: 220, damping: 18 }}
       className={
         featured
-          ? "group relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/95 p-8 shadow-[0_24px_80px_rgba(15,23,42,0.34)]"
-          : "group overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/90 p-7 transition hover:border-[var(--accent-secondary)]/50"
+          ? "group relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/95 p-8 shadow-[var(--shadow-card)]"
+          : "group overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-surface)]/90 p-7 shadow-[var(--shadow-card)] transition hover:border-[var(--accent-secondary)]/50"
       }
     >
       <span className="text-xs font-semibold uppercase tracking-[0.4em] text-[var(--accent)]/80">
